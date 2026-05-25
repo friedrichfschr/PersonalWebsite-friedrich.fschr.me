@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import type { NowEntry } from "../../nowEntries";
-import { getResolvedUiLanguage, formatNowDate } from "../../utils/language";
+import { formatNowDate } from "../../utils/language";
 import type { ExpandedCardState } from "./types";
 import { renderRichBlocks } from "./richText";
 
@@ -29,10 +29,9 @@ export function NowCard({
   onExpand?: (entry: NowEntry, card: HTMLElement) => void;
   onClose?: () => void;
 }) {
-  const isHighlightEntry = entry.id === "openclaw";
-  const isLeftWrapImageEntry = entry.id === "cbyx-ppp";
-  const { t, i18n } = useTranslation();
-  const currentLocale = getResolvedUiLanguage(i18n.language, i18n.resolvedLanguage);
+  const isHighlightEntry = entry.imageStyle === "highlight";
+  const isLeftWrapImageEntry = entry.imageStyle === "inline-flow-left";
+  const { t } = useTranslation();
   const cardRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const staticBodyRef = useRef<HTMLDivElement | null>(null);
@@ -40,7 +39,9 @@ export function NowCard({
   const expandableBlocks = entry.expandable?.blocks ?? [];
   const hasExpandedContent = entry.blocks.length > 0 || expandableBlocks.length > 0;
   const visibleBlocks = isExpanded ? [...entry.blocks, ...expandableBlocks] : entry.blocks;
-  const shouldShowReadMore = !isExpanded && isStaticBodyOverflowing && hasExpandedContent;
+  const shouldShowReadMore = !isExpanded && hasExpandedContent && (
+    isStaticBodyOverflowing || expandableBlocks.length > 0
+  );
   const isExpandableCard = !isExpanded && hasExpandedContent;
 
   const expandedStyle = useMemo(() => {
@@ -132,19 +133,9 @@ export function NowCard({
     >
       <div className={`now-card-meta-row  ${isExpanded ? "is-expanded-header" : ""} `} style={{ paddingTop: "1rem" }}>
         <div className="now-card-meta-leading">
-          <span className="now-card-date">{formatNowDate(entry.date, currentLocale)}</span>
+          <span className="now-card-date">{formatNowDate(entry.date)}</span>
         </div>
-        <div className="now-card-meta-actions">
-          {entry.isTranslated && (
-            <span
-              className="now-card-language-pill is-translation-pill"
-              aria-label={t("now.automaticTranslation")}
-              title={t("now.automaticTranslation")}
-            >
-              {t("now.automaticTranslation")}
-            </span>
-          )}
-        </div>
+        <div className="now-card-meta-actions"></div>
         <div className="now-card-meta-trailing">
           {isExpanded ? (
             <button
